@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import tasks, agents, websocket
+from api.routes import tasks, agents, websocket, security
 from core.config import settings
 from core.logger import logger
 
@@ -21,6 +21,7 @@ app.add_middleware(
 app.include_router(tasks.router, prefix="/api/tasks", tags=["tasks"])
 app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
 app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+app.include_router(security.router, prefix="/api/security", tags=["security"])
 
 @app.get("/health")
 async def health():

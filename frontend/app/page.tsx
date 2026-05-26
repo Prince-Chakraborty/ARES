@@ -6,6 +6,7 @@ import EventFeed from "@/components/swarm/EventFeed";
 import TaskPipeline from "@/components/swarm/TaskPipeline";
 import FinalOutput from "@/components/swarm/FinalOutput";
 import StatsBar from "@/components/swarm/StatsBar";
+import SecurityDemo from "@/components/swarm/SecurityDemo";
 
 const AGENTS = [
   { name: "Planner", role: "Task decomposition and execution graph", color: "purple" },
@@ -21,6 +22,7 @@ export default function Home() {
   const [goal, setGoal] = useState("");
   const [score, setScore] = useState<number | undefined>(undefined);
   const [grade, setGrade] = useState<string | undefined>(undefined);
+  const [activeTab, setActiveTab] = useState<"swarm" | "security">("swarm");
   const { state, runSwarm, reset } = useSwarm();
 
   useEffect(() => {
@@ -75,14 +77,44 @@ export default function Home() {
             <p>Autonomous Resilient Execution Swarm</p>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ display: "flex", gap: "4px", background: "#18181b", border: "1px solid #27272a", borderRadius: "10px", padding: "4px" }}>
+            <button
+              onClick={() => setActiveTab("swarm")}
+              style={{
+                padding: "6px 16px",
+                borderRadius: "7px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "500",
+                background: activeTab === "swarm" ? "#27272a" : "transparent",
+                color: activeTab === "swarm" ? "#fff" : "#71717a",
+                transition: "all 0.2s"
+              }}
+            >
+              ⚡ Swarm
+            </button>
+            <button
+              onClick={() => setActiveTab("security")}
+              style={{
+                padding: "6px 16px",
+                borderRadius: "7px",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "500",
+                background: activeTab === "security" ? "#27272a" : "transparent",
+                color: activeTab === "security" ? "#fff" : "#71717a",
+                transition: "all 0.2s"
+              }}
+            >
+              🔒 Security
+            </button>
+          </div>
           <div className={`status-badge ${overallStatus}`}>
             <span className={`status-dot ${overallStatus}`}></span>
-            {state.is_running
-              ? "Swarm Active"
-              : state.status === "completed"
-              ? "Completed"
-              : "Standby"}
+            {state.is_running ? "Swarm Active" : state.status === "completed" ? "Completed" : "Standby"}
           </div>
           {state.task_id && (
             <span className="task-id">#{state.task_id}</span>
@@ -91,69 +123,75 @@ export default function Home() {
       </header>
 
       <div className="main-content">
-        <div className="goal-panel">
-          <div className="panel-label">Mission Goal</div>
-          <textarea
-            className="goal-textarea"
-            value={goal}
-            onChange={e => setGoal(e.target.value)}
-            placeholder="e.g. Analyze the AI startup market, compare top competitors, generate a GTM strategy, identify risks, and summarize actionable insights..."
-            rows={3}
-            disabled={state.is_running}
-          />
-          <div className="btn-row">
-            <button
-              className="btn-primary"
-              onClick={handleRun}
-              disabled={!goal.trim() || state.is_running}
-            >
-              {state.is_running ? "⚙ Swarm Running..." : "⚡ Activate Swarm"}
-            </button>
-            {state.status !== "idle" && (
-              <button
-                className="btn-secondary"
-                onClick={handleReset}
+        {activeTab === "security" ? (
+          <SecurityDemo />
+        ) : (
+          <>
+            <div className="goal-panel">
+              <div className="panel-label">Mission Goal</div>
+              <textarea
+                className="goal-textarea"
+                value={goal}
+                onChange={e => setGoal(e.target.value)}
+                placeholder="e.g. Analyze the AI startup market, compare top competitors, generate a GTM strategy, identify risks, and summarize actionable insights..."
+                rows={3}
                 disabled={state.is_running}
-              >
-                Reset
-              </button>
-            )}
-          </div>
-        </div>
+              />
+              <div className="btn-row">
+                <button
+                  className="btn-primary"
+                  onClick={handleRun}
+                  disabled={!goal.trim() || state.is_running}
+                >
+                  {state.is_running ? "⚙ Swarm Running..." : "⚡ Activate Swarm"}
+                </button>
+                {state.status !== "idle" && (
+                  <button
+                    className="btn-secondary"
+                    onClick={handleReset}
+                    disabled={state.is_running}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
 
-        <StatsBar
-          isRunning={state.is_running}
-          status={state.status}
-          eventCount={state.events.length}
-          subtaskCount={state.subtasks.length}
-          completedCount={completedCount}
-          score={score}
-          grade={grade}
-        />
-
-        <div className="agents-grid">
-          {AGENTS.map(agent => (
-            <AgentCard
-              key={agent.name}
-              name={agent.name}
-              role={agent.role}
-              color={agent.color}
-              status={getAgentStatus(agent.name) as any}
+            <StatsBar
+              isRunning={state.is_running}
+              status={state.status}
+              eventCount={state.events.length}
+              subtaskCount={state.subtasks.length}
+              completedCount={completedCount}
+              score={score}
+              grade={grade}
             />
-          ))}
-        </div>
 
-        <div className="bottom-grid">
-          <EventFeed events={state.events} />
-          <TaskPipeline subtasks={state.subtasks} />
-        </div>
+            <div className="agents-grid">
+              {AGENTS.map(agent => (
+                <AgentCard
+                  key={agent.name}
+                  name={agent.name}
+                  role={agent.role}
+                  color={agent.color}
+                  status={getAgentStatus(agent.name) as any}
+                />
+              ))}
+            </div>
 
-        <FinalOutput
-          output={state.final_output}
-          score={score}
-          grade={grade}
-          security_flags={state.security_flags}
-        />
+            <div className="bottom-grid">
+              <EventFeed events={state.events} />
+              <TaskPipeline subtasks={state.subtasks} />
+            </div>
+
+            <FinalOutput
+              output={state.final_output}
+              score={score}
+              grade={grade}
+              security_flags={state.security_flags}
+            />
+          </>
+        )}
       </div>
     </main>
   );
