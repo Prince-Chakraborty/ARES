@@ -1,13 +1,11 @@
 from agents.base_agent import BaseAgent
 from typing import Any, Dict, List
-from core.config import settings
-from groq import AsyncGroq
+from core.llm import chat
 import json
 
 class MemoryAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="Memory", role="Context storage and long-term workflow memory")
-        self.client = AsyncGroq(api_key=settings.GROQ_API_KEY)
         self.short_term: List[Dict] = []
         self.long_term: Dict[str, Any] = {}
 
@@ -40,8 +38,7 @@ class MemoryAgent(BaseAgent):
             return {"retrieved": True, "key": key, "value": value}
 
         prompt = f"""
-You are an AI memory agent. Summarize and compress the following workflow data
-into a structured memory object for future agent use.
+You are an AI memory agent. Summarize and compress the following workflow data.
 
 Data: {json.dumps(data)[:1000]}
 
@@ -53,17 +50,7 @@ Respond ONLY with valid JSON:
   "recommended_context": "What future agents should know"
 }}
 """
-        response = await self.client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2
-        )
-
-        raw = response.choices[0].message.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        raw = await chat([{"role": "user", "content": prompt}], temperature=0.2)
+        result = json.loads(raw)
         self.store("latest_summary", result)
         return result

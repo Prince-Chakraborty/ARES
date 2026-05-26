@@ -1,13 +1,11 @@
 from agents.base_agent import BaseAgent
 from typing import Any, Dict
-from core.config import settings
-from groq import AsyncGroq
+from core.llm import chat
 import json
 
 class ValidatorAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="Validator", role="Output verification and hallucination detection")
-        self.client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         output_to_validate = input_data.get("output", "")
@@ -31,17 +29,7 @@ Respond ONLY with valid JSON:
   "validation_summary": "One line summary of validation result"
 }}
 """
-        response = await self.client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0
-        )
-
-        raw = response.choices[0].message.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        raw = await chat([{"role": "user", "content": prompt}], temperature=0)
+        result = json.loads(raw)
         self.logger.info(f"Validation complete. Valid: {result.get('is_valid')}")
         return result

@@ -1,13 +1,11 @@
 from agents.base_agent import BaseAgent
 from typing import Any, Dict
-from core.config import settings
-from groq import AsyncGroq
+from core.llm import chat
 import json
 
 class ExecutorAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="Executor", role="Workflow execution and API orchestration")
-        self.client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         task = input_data.get("input_hint", input_data.get("goal", ""))
@@ -30,17 +28,7 @@ Respond ONLY with valid JSON:
   "execution_status": "success"
 }}
 """
-        response = await self.client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.5
-        )
-
-        raw = response.choices[0].message.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        result = json.loads(raw.strip())
+        raw = await chat([{"role": "user", "content": prompt}], temperature=0.5)
+        result = json.loads(raw)
         self.logger.info(f"Execution complete. Status: {result.get('execution_status')}")
         return result

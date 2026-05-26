@@ -1,14 +1,12 @@
 from agents.base_agent import BaseAgent
 from typing import Any, Dict
-from core.config import settings
-from groq import AsyncGroq
+from core.llm import chat
 import json
 import uuid
 
 class PlannerAgent(BaseAgent):
     def __init__(self):
         super().__init__(name="Planner", role="Task decomposition and execution graph creation")
-        self.client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
     async def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         goal = input_data.get("goal", "")
@@ -20,7 +18,7 @@ Each subtask must be assigned to one of these agents: research, executor, valida
 
 Goal: {goal}
 
-Respond ONLY with valid JSON in this exact format:
+Respond ONLY with valid JSON:
 {{
   "subtasks": [
     {{
@@ -34,18 +32,8 @@ Respond ONLY with valid JSON in this exact format:
   "execution_summary": "One line summary of the plan"
 }}
 """
-        response = await self.client.chat.completions.create(
-            model=settings.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.3
-        )
-
-        raw = response.choices[0].message.content.strip()
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        parsed = json.loads(raw.strip())
+        raw = await chat([{"role": "user", "content": prompt}], temperature=0.3)
+        parsed = json.loads(raw)
 
         for task in parsed["subtasks"]:
             task["id"] = f"task_{uuid.uuid4().hex[:8]}"
