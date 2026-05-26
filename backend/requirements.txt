@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+websockets
+python-dotenv
+openai
+langchain
+langgraph
+redis
+asyncpg
+pydantic
+httpx
+langchain-openai
+langchain-community
