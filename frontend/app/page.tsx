@@ -7,6 +7,7 @@ import TaskPipeline from "@/components/swarm/TaskPipeline";
 import FinalOutput from "@/components/swarm/FinalOutput";
 import StatsBar from "@/components/swarm/StatsBar";
 import SecurityDemo from "@/components/swarm/SecurityDemo";
+import Navigation from "@/components/ui/Navigation";
 
 const AGENTS = [
   { name: "Planner", role: "Task decomposition and execution graph", color: "purple" },
@@ -78,6 +79,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <Navigation />
           <div style={{ display: "flex", gap: "4px", background: "#18181b", border: "1px solid #27272a", borderRadius: "10px", padding: "4px" }}>
             <button
               onClick={() => setActiveTab("swarm")}
