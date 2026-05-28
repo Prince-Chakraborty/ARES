@@ -4,7 +4,7 @@ from core.logger import get_logger
 logger = get_logger("core.llm")
 
 def get_llm_client():
-    if settings.use_azure:
+    if settings.use_azure_openai:
         from openai import AsyncAzureOpenAI
         logger.info("Using Azure OpenAI")
         return AsyncAzureOpenAI(
