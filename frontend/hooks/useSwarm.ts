@@ -36,6 +36,9 @@ const initialState: SwarmState = {
   is_running: false
 };
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+const WS_URL = BACKEND_URL.replace("https://", "wss://").replace("http://", "ws://");
+
 export function useSwarm() {
   const [state, setState] = useState<SwarmState>(initialState);
   const wsRef = useRef<WebSocket | null>(null);
@@ -50,7 +53,7 @@ export function useSwarm() {
       is_running: true
     });
 
-    const ws = new WebSocket(`ws://localhost:8000/ws/swarm/${taskId}`);
+    const ws = new WebSocket(`${WS_URL}/ws/swarm/${taskId}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
