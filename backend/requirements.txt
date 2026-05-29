@@ -11,3 +11,7 @@ pydantic
 httpx
 langchain-openai
 langchain-community
+pydantic-settings
+groq
+azure-ai-textanalytics
+azure-core
