@@ -7,6 +7,7 @@ import TaskPipeline from "@/components/swarm/TaskPipeline";
 import FinalOutput from "@/components/swarm/FinalOutput";
 import StatsBar from "@/components/swarm/StatsBar";
 import SecurityDemo from "@/components/swarm/SecurityDemo";
+import HeroSection from "@/components/swarm/HeroSection";
 import Navigation from "@/components/ui/Navigation";
 
 const AGENTS = [
@@ -24,6 +25,7 @@ export default function Home() {
   const [score, setScore] = useState<number | undefined>(undefined);
   const [grade, setGrade] = useState<string | undefined>(undefined);
   const [activeTab, setActiveTab] = useState<"swarm" | "security">("swarm");
+  const [showHero, setShowHero] = useState(true);
   const { state, runSwarm, reset } = useSwarm();
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export default function Home() {
     if (!goal.trim() || state.is_running) return;
     setScore(undefined);
     setGrade(undefined);
+    setShowHero(false);
     runSwarm(goal);
   };
 
@@ -60,6 +63,7 @@ export default function Home() {
     setGoal("");
     setScore(undefined);
     setGrade(undefined);
+    setShowHero(true);
   };
 
   const overallStatus = state.is_running
@@ -129,6 +133,8 @@ export default function Home() {
           <SecurityDemo />
         ) : (
           <>
+            {showHero && <HeroSection />}
+
             <div className="goal-panel">
               <div className="panel-label">Mission Goal</div>
               <textarea
