@@ -27,7 +27,28 @@ app.include_router(health_router, tags=["health"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ARES is online", "version": "1.0.0"}
+    return {
+        "status": "ARES is online",
+        "version": "1.0.0",
+        "microsoft_stack": {
+            "azure_language": settings.use_azure_language,
+            "azure_foundry": settings.use_azure_foundry,
+            "azure_openai_ready": True
+        }
+    }
+
+@app.get("/api/status")
+async def status():
+    from core.foundry import foundry_client
+    return {
+        "ares": "online",
+        "version": "1.0.0",
+        "agents": 7,
+        "azure_language": settings.use_azure_language,
+        "azure_foundry": foundry_client.get_workspace_info(),
+        "github_copilot": "used in development",
+        "groq_llama": settings.GROQ_MODEL
+    }
 
 if __name__ == "__main__":
     import uvicorn
